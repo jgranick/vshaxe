@@ -25,7 +25,7 @@ class DisplayConfiguration {
         context.subscriptions.push(window.onDidChangeActiveTextEditor(onDidChangeActiveTextEditor));
     }
 
-    public function onTargetsUpdated(projectType:String, targets:Array<String>) {
+    public function update(projectType:String, targets:Array<String>) {
         this.projectType = projectType;
         this.targets = targets;
         fixIndex();

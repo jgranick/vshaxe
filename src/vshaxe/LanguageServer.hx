@@ -2,12 +2,15 @@ package vshaxe;
 
 import Vscode.*;
 import vscode.*;
+import vshaxe.projectTypes.*;
 
 class LanguageServer {
     var context:ExtensionContext;
     var disposable:Disposable;
     var hxFileWatcher:FileSystemWatcher;
     var displayConfig:DisplayConfiguration;
+    var projectTypeAdapter:ProjectTypeAdapter;
+    var projectType(get,never):String;
 
     public var client(default,null):LanguageClient;
 
@@ -15,7 +18,28 @@ class LanguageServer {
         this.context = context;
 
         displayConfig = new DisplayConfiguration(context);
+        createProjectTypeAdapter();
+
+        context.subscriptions.push(workspace.onDidChangeConfiguration(onDidChangeConfiguration));
         context.subscriptions.push(window.onDidChangeActiveTextEditor(onDidChangeActiveTextEditor));
+    }
+
+    function get_projectType() return workspace.getConfiguration("haxe").get("projectType");
+
+    function onDidChangeConfiguration(_) {
+        if (projectTypeAdapter == null || projectTypeAdapter.getName().toLowerCase() != projectType) {
+            createProjectTypeAdapter();
+        }
+    }
+
+    function createProjectTypeAdapter() {
+        var displayConfigurations = workspace.getConfiguration("haxe").get("displayConfigurations");
+        projectTypeAdapter = switch (projectType) {
+            case "haxe": new HaxeAdapter(displayConfigurations, displayConfig.getIndex());
+            case "lime": new LimeAdapter(displayConfigurations, displayConfig.getIndex());
+            case _: null; // TODO: error handling
+        }
+        displayConfig.update(projectTypeAdapter.getName(), projectTypeAdapter.getTargets());
     }
 
     function onDidChangeActiveTextEditor(editor:TextEditor) {
@@ -35,7 +59,7 @@ class LanguageServer {
                 configurationSection: "haxe"
             },
             initializationOptions: {
-                displayConfigurationIndex: displayConfig.getIndex()
+                displayConfiguration: projectTypeAdapter.getDisplayArguments()
             }
         };
         client = new LanguageClient("haxe", "Haxe", serverOptions, clientOptions);
@@ -45,7 +69,8 @@ class LanguageServer {
         client.onReady().then(function(_) {
             client.outputChannel.appendLine("Haxe language server started");
             displayConfig.onDidChangeIndex = function(index) {
-                client.sendNotification({method: "vshaxe/didChangeDisplayConfigurationIndex"}, {index: index});
+                projectTypeAdapter.onDidChangeDisplayConfigurationIndex(index);
+                client.sendNotification({method: "vshaxe/didChangeDisplayArguments"}, {arguments: projectTypeAdapter.getDisplayArguments()});
             }
 
             hxFileWatcher = workspace.createFileSystemWatcher("**/*.hx", false, true, true);
@@ -66,10 +91,6 @@ class LanguageServer {
 
             client.onNotification({method: "vshaxe/progressStart"}, startProgress);
             client.onNotification({method: "vshaxe/progressStop"}, stopProgress);
-
-            client.onNotification({method: "vshaxe/updateTargets"}, function(result:{projectType:String, targets:Array<String>}) {
-                displayConfig.onTargetsUpdated(result.projectType, result.targets);
-            });
 
             #if debug
             client.onNotification({method: "vshaxe/updateParseTree"}, function(result:{uri:String, parseTree:String}) {

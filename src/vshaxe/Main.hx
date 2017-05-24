@@ -5,6 +5,8 @@ import vscode.*;
 
 class Main {
     function new(context:ExtensionContext) {
+        Sys.setCwd(workspace.rootPath);
+
         new InitProject(context);
         var server = new LanguageServer(context);
         new Commands(context, server);

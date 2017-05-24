@@ -1,0 +1,13 @@
+package vshaxe.projectTypes;
+
+class HaxeAdapter extends ProjectTypeAdapter {
+    override public function getName() return "Haxe";
+
+    override public function getTargets():Array<String> {
+        return displayConfigurations.map(function(config) return config.join(" "));
+    }
+
+    override public function getDisplayArguments():Array<String> {
+        return displayConfigurations[displayConfigurationIndex];
+    }
+}
