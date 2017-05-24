@@ -67,6 +67,10 @@ class LanguageServer {
             client.onNotification({method: "vshaxe/progressStart"}, startProgress);
             client.onNotification({method: "vshaxe/progressStop"}, stopProgress);
 
+            client.onNotification({method: "vshaxe/updateTargets"}, function(result:{projectType:String, targets:Array<String>}) {
+                displayConfig.onTargetsUpdated(result.projectType, result.targets);
+            });
+
             #if debug
             client.onNotification({method: "vshaxe/updateParseTree"}, function(result:{uri:String, parseTree:String}) {
                 commands.executeCommand("hxparservis.updateParseTree", result.uri, result.parseTree);

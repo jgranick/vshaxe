@@ -62,6 +62,15 @@
                         }
                     }
                 },
+                "haxe.projectType": {
+                    "description": "The project type for completion and task generation",
+                    "type": "string",
+                    "default": "haxe",
+                    "enum": [
+                        "haxe",
+                        "lime"
+                    ]
+                },
                 "haxe.displayServer": {
                     "description": "Haxe completion server configuration",
                     "type": "object",
