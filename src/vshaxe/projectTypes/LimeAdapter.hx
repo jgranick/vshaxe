@@ -101,6 +101,7 @@ class LimeAdapter extends ProjectTypeAdapter {
         var task = new ProcessTask('lime $commandName $target', "haxelib", getLimeArguments(command));
         if (group != null)
             task.group = group;
+        task.terminal.echo = true;
         // TODO: problem matcher
         return task;
     }
