@@ -5,17 +5,32 @@ import js.node.ChildProcess;
 import vscode.*;
 
 class LimeAdapter extends ProjectTypeAdapter {
-    var targets = [
-        "Flash",
-        "HTML5",
-        "Windows",
-        "Neko",
-        "Android"
-    ];
-
+    var targets:Array<String>;
     var arguments:Array<String>;
     var target:String;
     var projectFile:String;
+
+    public function new(displayConfigurations:Array<Array<String>>, displayConfigurationIndex:Int) {
+        super(displayConfigurations, displayConfigurationIndex);
+
+        targets = [
+            "Flash",
+            "HTML5",
+            "Neko",
+            "Android"
+        ];
+
+        switch (Sys.systemName()) {
+            case "Windows":
+                targets.push("Windows");
+            case "Linux":
+                targets.push("Linux");
+            case "Mac":
+                targets.push("Mac");
+                targets.push("iOS");
+                targets.push("tvOS");
+        }
+    }
 
     override public function getName() return "Lime";
 
