@@ -8,7 +8,7 @@ class LanguageServer {
     var context:ExtensionContext;
     var clientDisposable:Disposable;
     var hxFileWatcher:FileSystemWatcher;
-    var displayConfig:DisplayConfiguration;
+    var targetDropDown:DropDown;
     var projectTypeAdapter:ProjectTypeAdapter;
     var projectType(get, never):String;
     var taskDisposable:Disposable;
@@ -18,7 +18,7 @@ class LanguageServer {
     public function new(context:ExtensionContext) {
         this.context = context;
 
-        displayConfig = new DisplayConfiguration(context);
+        targetDropDown = new DropDown(context, "haxe.selectDisplayConfiguration", "haxe.displayConfigurationIndex");
         createProjectTypeAdapter();
 
         context.subscriptions.push(workspace.onDidChangeConfiguration(onDidChangeConfiguration));
@@ -39,11 +39,11 @@ class LanguageServer {
 
         var displayConfigurations = workspace.getConfiguration("haxe").get("displayConfigurations");
         projectTypeAdapter = switch (projectType) {
-            case "haxe": new HaxeAdapter(displayConfigurations, displayConfig.getIndex());
-            case "lime": new LimeAdapter(displayConfigurations, displayConfig.getIndex());
+            case "haxe": new HaxeAdapter(displayConfigurations, targetDropDown.getIndex());
+            case "lime": new LimeAdapter(displayConfigurations, targetDropDown.getIndex());
             case _: throw "invalid project type " + projectType; // TODO: better error handling
         }
-        displayConfig.update(projectTypeAdapter.getName(), projectTypeAdapter.getTargets());
+        targetDropDown.update(projectTypeAdapter.getName(), projectTypeAdapter.getTargets());
         taskDisposable = workspace.registerTaskProvider(projectTypeAdapter);
     }
 
@@ -73,7 +73,7 @@ class LanguageServer {
         };
         client.onReady().then(function(_) {
             client.outputChannel.appendLine("Haxe language server started");
-            displayConfig.onDidChangeIndex = function(index) {
+            targetDropDown.onDidChangeIndex = function(index) {
                 projectTypeAdapter.onDidChangeDisplayConfigurationIndex(index);
                 client.sendNotification({method: "vshaxe/didChangeDisplayArguments"}, {arguments: projectTypeAdapter.getDisplayArguments()});
             }

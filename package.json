@@ -44,6 +44,7 @@
         "onCommand:haxe.restartLanguageServer",
         "onCommand:haxe.initProject",
         "onCommand:haxe.selectDisplayConfiguration",
+        "onCommand:haxe.selectMode",
         "onCommand:haxe.runGlobalDiagnostics",
         "onCommand:haxe.toggleCodeLens",
         "onCommand:workbench.action.tasks.runTask",
@@ -192,8 +193,13 @@
                 "category": "Haxe"
             },
             {
-                "title": "Select Display Configuration...",
+                "title": "Select Target...",
                 "command": "haxe.selectDisplayConfiguration",
+                "category": "Haxe"
+            },
+            {
+                "title": "Select Mode...",
+                "command": "haxe.selectMode",
                 "category": "Haxe"
             },
             {

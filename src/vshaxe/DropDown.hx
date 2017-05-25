@@ -5,41 +5,43 @@ import vscode.QuickPickItem;
 import vscode.StatusBarItem;
 import Vscode.*;
 
-class DisplayConfiguration {
+class DropDown {
     var context:ExtensionContext;
     var statusBarItem:StatusBarItem;
     var projectType:String = "Haxe";
-    var targets:Array<String> = [];
+    var options:Array<String> = [];
+    var workspaceStateName:String;
 
-    public function new(context:ExtensionContext) {
+    public function new(context:ExtensionContext, commandName:String, workspaceStateName:String) {
         this.context = context;
+        this.workspaceStateName = workspaceStateName;
 
-        statusBarItem = window.createStatusBarItem(Left);
+        statusBarItem = window.createStatusBarItem(Left, 5);
         statusBarItem.tooltip = "Select Haxe configuration";
-        statusBarItem.command = "haxe.selectDisplayConfiguration";
+        statusBarItem.command = commandName;
         context.subscriptions.push(statusBarItem);
 
-        context.subscriptions.push(commands.registerCommand("haxe.selectDisplayConfiguration", selectConfiguration));
+        context.subscriptions.push(commands.registerCommand(commandName, selectConfiguration));
 
         context.subscriptions.push(workspace.onDidChangeConfiguration(onDidChangeConfiguration));
         context.subscriptions.push(window.onDidChangeActiveTextEditor(onDidChangeActiveTextEditor));
     }
 
-    public function update(projectType:String, targets:Array<String>) {
+    public function update(projectType:String, options:Array<String>) {
         this.projectType = projectType;
-        this.targets = targets;
+        this.options = options;
         fixIndex();
         updateStatusBarItem();
     }
 
     function fixIndex() {
         var index = getIndex();
-        if (targets == null || index >= targets.length)
+        if (options == null || index >= options.length)
             setIndex(0);
     }
 
     function selectConfiguration() {
-        if (targets == null || targets.length == 0) {
+        if (options == null || options.length == 0) {
             window.showErrorMessage("No Haxe display configurations are available. Please provide the haxe.displayConfigurations setting.", ({title: "Edit settings"} : vscode.MessageItem)).then(function(button) {
                 if (button == null)
                     return;
@@ -47,21 +49,21 @@ class DisplayConfiguration {
             });
             return;
         }
-        if (targets.length == 1) {
-            window.showInformationMessage("Only one Haxe display configuration found: " + targets[0]);
+        if (options.length == 1) {
+            window.showInformationMessage("Only one Haxe display configuration found: " + options[0]);
             return;
         }
 
-        var items:Array<DisplayConfigurationPickItem> = [];
-        for (index in 0...targets.length) {
+        var items:Array<IndexedPickItem> = [];
+        for (index in 0...options.length) {
             items.push({
-                label: targets[index],
+                label: options[index],
                 description: "",
                 index: index,
             });
         }
 
-        window.showQuickPick(items, {placeHolder: 'Select $projectType configuration'}).then(function(choice:DisplayConfigurationPickItem) {
+        window.showQuickPick(items, {placeHolder: 'Select $projectType configuration'}).then(function(choice:IndexedPickItem) {
             if (choice == null || choice.index == getIndex())
                 return;
             setIndex(choice.index);
@@ -84,9 +86,9 @@ class DisplayConfiguration {
         }
 
         if (languages.match({language: 'haxe', scheme: 'file'}, window.activeTextEditor.document) > 0) {
-            if (targets != null && targets.length >= 2) {
+            if (options != null && options.length >= 2) {
                 var index = getIndex();
-                statusBarItem.text = '$(gear) $projectType: ${targets[index]}';
+                statusBarItem.text = '$(gear) $projectType: ${options[index]}';
                 statusBarItem.show();
                 return;
             }
@@ -96,11 +98,11 @@ class DisplayConfiguration {
     }
 
     public inline function getIndex():Int {
-        return context.workspaceState.get("haxe.displayConfigurationIndex", 0);
+        return context.workspaceState.get(workspaceStateName, 0);
     }
 
     function setIndex(index:Int) {
-        context.workspaceState.update("haxe.displayConfigurationIndex", index);
+        context.workspaceState.update(workspaceStateName, index);
         updateStatusBarItem();
         onDidChangeIndex(index);
     }
@@ -108,7 +110,7 @@ class DisplayConfiguration {
     public dynamic function onDidChangeIndex(index:Int):Void {}
 }
 
-private typedef DisplayConfigurationPickItem = {
+private typedef IndexedPickItem = {
     >QuickPickItem,
     var index:Int;
 }

@@ -43,9 +43,7 @@ class LimeAdapter extends ProjectTypeAdapter {
 
     override public function getName() return "Lime";
 
-    override public function getTargets():Array<String> {
-        return targets;
-    }
+    override public function getTargets() return targets;
 
     override public function getDisplayArguments():Array<String> {
         if (arguments == null)
@@ -71,9 +69,7 @@ class LimeAdapter extends ProjectTypeAdapter {
 
     function runCommand(command:String, args:Array<String>):String {
         var commandLine = command + " " + args.join(" ");
-        trace(commandLine); // TODO: some verbose setting
         var result:Buffer = ChildProcess.execSync(commandLine);
-        trace(result.toString());
         return result.toString();
     }
 
