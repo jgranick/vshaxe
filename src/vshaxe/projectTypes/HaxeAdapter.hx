@@ -17,4 +17,9 @@ class HaxeAdapter extends ProjectTypeAdapter {
         return [
         ];
     }
+
+    override public function getModes():Array<String> {
+        return [
+        ];
+    }
 }

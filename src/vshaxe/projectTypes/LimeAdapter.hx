@@ -15,12 +15,13 @@ private enum LimeCommand {
 
 class LimeAdapter extends ProjectTypeAdapter {
     var targets:Array<String>;
+    var modes:Array<String>;
     var arguments:Array<String>;
     var target:String;
     var projectFile:String;
 
-    public function new(displayConfigurations:Array<Array<String>>, displayConfigurationIndex:Int) {
-        super(displayConfigurations, displayConfigurationIndex);
+    public function new(displayConfigurations:Array<Array<String>>, displayConfigurationIndex:Int, modeIndex:Int) {
+        super(displayConfigurations, displayConfigurationIndex, modeIndex);
 
         targets = [
             "Flash",
@@ -39,11 +40,19 @@ class LimeAdapter extends ProjectTypeAdapter {
                 targets.push("iOS");
                 targets.push("tvOS");
         }
+
+        modes = [
+            "debug",
+            "release",
+            "final"
+        ];
     }
 
     override public function getName() return "Lime";
 
     override public function getTargets() return targets;
+
+    override public function getModes() return modes;
 
     override public function getDisplayArguments():Array<String> {
         if (arguments == null)
@@ -53,6 +62,11 @@ class LimeAdapter extends ProjectTypeAdapter {
 
     override public function onDidChangeDisplayConfigurationIndex(index:Int) {
         super.onDidChangeDisplayConfigurationIndex(index);
+        arguments = null;
+    }
+
+    override public function onDidChangeModeIndex(index:Int) {
+        super.onDidChangeModeIndex(index);
         arguments = null;
     }
 
@@ -83,7 +97,8 @@ class LimeAdapter extends ProjectTypeAdapter {
     }
 
     function createTask(command:LimeCommand, ?group:TaskGroup) {
-        var task = new ProcessTask('lime $command $target', "haxelib", getLimeArguments(command));
+        var commandName = Std.string(command).toLowerCase();
+        var task = new ProcessTask('lime $commandName $target', "haxelib", getLimeArguments(command));
         if (group != null)
             task.group = group;
         // TODO: problem matcher
@@ -91,6 +106,12 @@ class LimeAdapter extends ProjectTypeAdapter {
     }
 
     function getLimeArguments(command:LimeCommand) {
-        return ["run", "lime", Std.string(command).toLowerCase(), projectFile, target];
+        var arguments = ["run", "lime", Std.string(command).toLowerCase(), projectFile, target];
+        var mode = modes[modeIndex];
+        switch (mode) {
+            case "debug" | "final": arguments.push('-$mode');
+            case _:
+        }
+        return arguments;
     }
 }

@@ -9,6 +9,7 @@ class LanguageServer {
     var clientDisposable:Disposable;
     var hxFileWatcher:FileSystemWatcher;
     var targetDropDown:DropDown;
+    var modeDropDown:DropDown;
     var projectTypeAdapter:ProjectTypeAdapter;
     var projectType(get, never):String;
     var taskDisposable:Disposable;
@@ -18,7 +19,8 @@ class LanguageServer {
     public function new(context:ExtensionContext) {
         this.context = context;
 
-        targetDropDown = new DropDown(context, "haxe.selectDisplayConfiguration", "haxe.displayConfigurationIndex");
+        targetDropDown = new DropDown(context, "haxe.selectDisplayConfiguration", "haxe.displayConfigurationIndex", 5);
+        modeDropDown = new DropDown(context, "haxe.selectMode", "haxe.modeIndex", 4);
         createProjectTypeAdapter();
 
         context.subscriptions.push(workspace.onDidChangeConfiguration(onDidChangeConfiguration));
@@ -39,11 +41,13 @@ class LanguageServer {
 
         var displayConfigurations = workspace.getConfiguration("haxe").get("displayConfigurations");
         projectTypeAdapter = switch (projectType) {
-            case "haxe": new HaxeAdapter(displayConfigurations, targetDropDown.getIndex());
-            case "lime": new LimeAdapter(displayConfigurations, targetDropDown.getIndex());
+            case "haxe": new HaxeAdapter(displayConfigurations, targetDropDown.getIndex(), modeDropDown.getIndex());
+            case "lime": new LimeAdapter(displayConfigurations, targetDropDown.getIndex(), modeDropDown.getIndex());
             case _: throw "invalid project type " + projectType; // TODO: better error handling
         }
-        targetDropDown.update(projectTypeAdapter.getName(), projectTypeAdapter.getTargets());
+        var projectType = projectTypeAdapter.getName();
+        targetDropDown.update('$$(gear) $projectType:', projectType, projectTypeAdapter.getTargets());
+        modeDropDown.update('', projectType, projectTypeAdapter.getModes());
         taskDisposable = workspace.registerTaskProvider(projectTypeAdapter);
     }
 
@@ -73,9 +77,16 @@ class LanguageServer {
         };
         client.onReady().then(function(_) {
             client.outputChannel.appendLine("Haxe language server started");
+            function updateDisplayArguments() {
+                client.sendNotification({method: "vshaxe/didChangeDisplayArguments"}, {arguments: projectTypeAdapter.getDisplayArguments()});
+            }
             targetDropDown.onDidChangeIndex = function(index) {
                 projectTypeAdapter.onDidChangeDisplayConfigurationIndex(index);
-                client.sendNotification({method: "vshaxe/didChangeDisplayArguments"}, {arguments: projectTypeAdapter.getDisplayArguments()});
+                updateDisplayArguments();
+            }
+            modeDropDown.onDidChangeIndex = function(index) {
+                projectTypeAdapter.onDidChangeModeIndex(index);
+                updateDisplayArguments();
             }
 
             hxFileWatcher = workspace.createFileSystemWatcher("**/*.hx", false, true, true);

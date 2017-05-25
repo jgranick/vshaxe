@@ -8,15 +8,16 @@ import Vscode.*;
 class DropDown {
     var context:ExtensionContext;
     var statusBarItem:StatusBarItem;
+    var label:String = "";
     var projectType:String = "Haxe";
     var options:Array<String> = [];
     var workspaceStateName:String;
 
-    public function new(context:ExtensionContext, commandName:String, workspaceStateName:String) {
+    public function new(context:ExtensionContext, commandName:String, workspaceStateName:String, priority:Int) {
         this.context = context;
         this.workspaceStateName = workspaceStateName;
 
-        statusBarItem = window.createStatusBarItem(Left, 5);
+        statusBarItem = window.createStatusBarItem(Left, priority);
         statusBarItem.tooltip = "Select Haxe configuration";
         statusBarItem.command = commandName;
         context.subscriptions.push(statusBarItem);
@@ -27,7 +28,8 @@ class DropDown {
         context.subscriptions.push(window.onDidChangeActiveTextEditor(onDidChangeActiveTextEditor));
     }
 
-    public function update(projectType:String, options:Array<String>) {
+    public function update(label:String, projectType:String, options:Array<String>) {
+        this.label = label;
         this.projectType = projectType;
         this.options = options;
         fixIndex();
@@ -88,7 +90,7 @@ class DropDown {
         if (languages.match({language: 'haxe', scheme: 'file'}, window.activeTextEditor.document) > 0) {
             if (options != null && options.length >= 2) {
                 var index = getIndex();
-                statusBarItem.text = '$(gear) $projectType: ${options[index]}';
+                statusBarItem.text = '$label ${options[index]}';
                 statusBarItem.show();
                 return;
             }
