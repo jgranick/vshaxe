@@ -55,8 +55,8 @@ class LimeAdapter extends ProjectTypeAdapter {
 
     override public function provideTasks(token:CancellationToken):ProviderResult<Array<Task>> {
         return [
-            createTask("test", Build),
-            createTask("build"),
+            createTask("test", Test),
+            createTask("build", Build),
             createTask("run"),
             createTask("clean", Clean)
         ];
