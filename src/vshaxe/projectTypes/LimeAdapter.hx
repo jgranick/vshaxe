@@ -4,6 +4,15 @@ import js.node.Buffer;
 import js.node.ChildProcess;
 import vscode.*;
 
+private enum LimeCommand {
+    Update;
+    Display;
+    Test;
+    Build;
+    Run;
+    Clean;
+}
+
 class LimeAdapter extends ProjectTypeAdapter {
     var targets:Array<String>;
     var arguments:Array<String>;
@@ -52,9 +61,9 @@ class LimeAdapter extends ProjectTypeAdapter {
     function refreshArguments():Array<String> {
         projectFile = displayConfigurations[0][0]; // meh
         target = targets[displayConfigurationIndex].toLowerCase();
-        runCommand("haxelib", getLimeArguments("update"));
+        runCommand("haxelib", getLimeArguments(Update));
         // TODO: escape projectFile path?
-        var result:String = runCommand("haxelib", getLimeArguments("display"));
+        var result:String = runCommand("haxelib", getLimeArguments(Display));
         // TODO: hxml parser? if there are spaces in paths, we have a problem
         var arguments = ~/[ \n]/g.split(result);
         return arguments.filter(function(arg) return arg.length > 0);
@@ -70,14 +79,14 @@ class LimeAdapter extends ProjectTypeAdapter {
 
     override public function provideTasks(token:CancellationToken):ProviderResult<Array<Task>> {
         return [
-            createTask("test", Test),
-            createTask("build", Build),
-            createTask("run"),
-            createTask("clean", Clean)
+            createTask(Test, Test),
+            createTask(Build, Build),
+            createTask(Run),
+            createTask(Clean, Clean)
         ];
     }
 
-    function createTask(command:String, ?group:TaskGroup) {
+    function createTask(command:LimeCommand, ?group:TaskGroup) {
         var task = new ProcessTask('lime $command $target', "haxelib", getLimeArguments(command));
         if (group != null)
             task.group = group;
@@ -85,7 +94,7 @@ class LimeAdapter extends ProjectTypeAdapter {
         return task;
     }
 
-    function getLimeArguments(command:String) {
-        return ["run", "lime", command, projectFile, target];
+    function getLimeArguments(command:LimeCommand) {
+        return ["run", "lime", Std.string(command).toLowerCase(), projectFile, target];
     }
 }
