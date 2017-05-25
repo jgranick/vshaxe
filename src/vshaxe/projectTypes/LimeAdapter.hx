@@ -52,9 +52,9 @@ class LimeAdapter extends ProjectTypeAdapter {
     function refreshArguments():Array<String> {
         projectFile = displayConfigurations[0][0]; // meh
         target = targets[displayConfigurationIndex].toLowerCase();
-        runCommand("haxelib", ["run", "lime", "update", projectFile, target]);
+        runCommand("haxelib", getLimeArguments("update"));
         // TODO: escape projectFile path?
-        var result:String = runCommand("haxelib", ["run", "lime", "display", projectFile, target]);
+        var result:String = runCommand("haxelib", getLimeArguments("display"));
         // TODO: hxml parser? if there are spaces in paths, we have a problem
         var arguments = ~/[ \n]/g.split(result);
         return arguments.filter(function(arg) return arg.length > 0);
@@ -78,10 +78,14 @@ class LimeAdapter extends ProjectTypeAdapter {
     }
 
     function createTask(command:String, ?group:TaskGroup) {
-        var task = new ProcessTask('lime $command $target', "haxelib", ["run", "lime", command, projectFile, target]);
+        var task = new ProcessTask('lime $command $target', "haxelib", getLimeArguments(command));
         if (group != null)
             task.group = group;
         // TODO: problem matcher
         return task;
+    }
+
+    function getLimeArguments(command:String) {
+        return ["run", "lime", command, projectFile, target];
     }
 }
