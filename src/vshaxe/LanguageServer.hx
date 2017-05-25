@@ -6,13 +6,14 @@ import vshaxe.projectTypes.*;
 
 class LanguageServer {
     var context:ExtensionContext;
-    var disposable:Disposable;
+    var clientDisposable:Disposable;
     var hxFileWatcher:FileSystemWatcher;
     var displayConfig:DisplayConfiguration;
     var projectTypeAdapter:ProjectTypeAdapter;
-    var projectType(get,never):String;
+    var projectType(get, never):String;
+    var taskDisposable:Disposable;
 
-    public var client(default,null):LanguageClient;
+    public var client(default, null):LanguageClient;
 
     public function new(context:ExtensionContext) {
         this.context = context;
@@ -33,13 +34,17 @@ class LanguageServer {
     }
 
     function createProjectTypeAdapter() {
+        if (taskDisposable != null)
+            taskDisposable.dispose();
+
         var displayConfigurations = workspace.getConfiguration("haxe").get("displayConfigurations");
         projectTypeAdapter = switch (projectType) {
             case "haxe": new HaxeAdapter(displayConfigurations, displayConfig.getIndex());
             case "lime": new LimeAdapter(displayConfigurations, displayConfig.getIndex());
-            case _: null; // TODO: error handling
+            case _: throw "invalid project type " + projectType; // TODO: better error handling
         }
         displayConfig.update(projectTypeAdapter.getName(), projectTypeAdapter.getTargets());
+        taskDisposable = workspace.registerTaskProvider(projectTypeAdapter);
     }
 
     function onDidChangeActiveTextEditor(editor:TextEditor) {
@@ -98,11 +103,11 @@ class LanguageServer {
             });
             #end
         });
-        disposable = client.start();
-        context.subscriptions.push(disposable);
+        clientDisposable = client.start();
+        context.subscriptions.push(clientDisposable);
     }
 
-    var progresses = new Map<Int,Void->Void>();
+    var progresses = new Map<Int, Void->Void>();
 
     function startProgress(data:{id:Int, title:String}) {
         window.withProgress({location: Window, title: data.title}, function(_) {
@@ -124,10 +129,10 @@ class LanguageServer {
         if (client != null && client.outputChannel != null)
             client.outputChannel.dispose();
 
-        if (disposable != null) {
-            context.subscriptions.remove(disposable);
-            disposable.dispose();
-            disposable = null;
+        if (clientDisposable != null) {
+            context.subscriptions.remove(clientDisposable);
+            clientDisposable.dispose();
+            clientDisposable = null;
         }
         if (hxFileWatcher != null) {
             context.subscriptions.remove(hxFileWatcher);

@@ -2,6 +2,7 @@ package vshaxe.projectTypes;
 
 import js.node.Buffer;
 import js.node.ChildProcess;
+import vscode.*;
 
 class LimeAdapter extends ProjectTypeAdapter {
     var targets = [
@@ -12,7 +13,9 @@ class LimeAdapter extends ProjectTypeAdapter {
         "Android"
     ];
 
-    var arguments:Array<String> = null;
+    var arguments:Array<String>;
+    var target:String;
+    var projectFile:String;
 
     override public function getName() return "Lime";
 
@@ -32,8 +35,8 @@ class LimeAdapter extends ProjectTypeAdapter {
     }
 
     function refreshArguments():Array<String> {
-        var projectFile = displayConfigurations[0][0]; // meh
-        var target = targets[displayConfigurationIndex].toLowerCase();
+        projectFile = displayConfigurations[0][0]; // meh
+        target = targets[displayConfigurationIndex].toLowerCase();
         runCommand("haxelib", ["run", "lime", "update", projectFile, target]);
         // TODO: escape projectFile path?
         var result:String = runCommand("haxelib", ["run", "lime", "display", projectFile, target]);
@@ -46,7 +49,24 @@ class LimeAdapter extends ProjectTypeAdapter {
         var commandLine = command + " " + args.join(" ");
         trace(commandLine); // TODO: some verbose setting
         var result:Buffer = ChildProcess.execSync(commandLine);
-        trace(result);
+        trace(result.toString());
         return result.toString();
+    }
+
+    override public function provideTasks(token:CancellationToken):ProviderResult<Array<Task>> {
+        return [
+            createTask("test", Build),
+            createTask("build"),
+            createTask("run"),
+            createTask("clean", Clean)
+        ];
+    }
+
+    function createTask(command:String, ?group:TaskGroup) {
+        var task = new ProcessTask('lime $command $target', "haxelib", ["run", "lime", command, projectFile, target]);
+        if (group != null)
+            task.group = group;
+        // TODO: problem matcher
+        return task;
     }
 }

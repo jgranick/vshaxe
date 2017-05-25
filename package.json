@@ -5,6 +5,7 @@
     "engines": {
         "vscode": "^1.12.0"
     },
+    "enableProposedApi": true,
     "displayName": "Haxe",
     "description": "Haxe language support",
     "categories": [
@@ -44,7 +45,10 @@
         "onCommand:haxe.initProject",
         "onCommand:haxe.selectDisplayConfiguration",
         "onCommand:haxe.runGlobalDiagnostics",
-        "onCommand:haxe.toggleCodeLens"
+        "onCommand:haxe.toggleCodeLens",
+        "onCommand:workbench.action.tasks.runTask",
+        "onCommand:workbench.action.tasks.build",
+        "onCommand:workbench.action.tasks.test"
     ],
     "contributes": {
         "configuration": {

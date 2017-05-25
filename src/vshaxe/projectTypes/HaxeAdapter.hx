@@ -1,5 +1,7 @@
 package vshaxe.projectTypes;
 
+import vscode.*;
+
 class HaxeAdapter extends ProjectTypeAdapter {
     override public function getName() return "Haxe";
 
@@ -9,5 +11,10 @@ class HaxeAdapter extends ProjectTypeAdapter {
 
     override public function getDisplayArguments():Array<String> {
         return displayConfigurations[displayConfigurationIndex];
+    }
+
+    override public function provideTasks(token:CancellationToken):ProviderResult<Array<Task>> {
+        return [
+        ];
     }
 }
