@@ -296,6 +296,13 @@
                 "endColumn": 5,
                 "severity": 6,
                 "message": 7
+            },
+            {
+                "name": "haxe-trace",
+                "regexp": "^(.+):(\\d+): (.*)$",
+                "file": 1,
+                "line": 2,
+                "message": 3
             }
         ],
         "problemMatchers": [
@@ -308,6 +315,17 @@
                     "${cwd}"
                 ],
                 "pattern": "$haxe"
+            },
+            {
+                "name": "haxe-trace",
+                "owner": "haxe",
+                "applyTo": "allDocuments",
+                "fileLocation": [
+                    "relative",
+                    "${cwd}"
+                ],
+                "pattern": "$haxe-trace",
+                "severity": "info"
             }
         ],
         "views": {
