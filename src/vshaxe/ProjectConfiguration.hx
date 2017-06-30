@@ -14,6 +14,7 @@ class ProjectConfiguration {
     var configurationListByID:Map<String, ProjectConfigurationItem>;
     var configurations = new Map<String, AbstractProjectType>();
     var configuration:AbstractProjectType;
+    var lastLanguage:String;
 
     public function new(context:ExtensionContext) {
         this.context = context;
@@ -78,17 +79,20 @@ class ProjectConfiguration {
     }
 
     function updateStatusBarItem() {
-        if (window.activeTextEditor == null) {
-            statusBarItem.hide();
-            return;
-        }
 
-        if (languages.match({language: 'haxe', scheme: 'file'}, window.activeTextEditor.document) > 0) {
+        //var hasEditor = (window.activeTextEditor != null);
+        //var isDocument = hasEditor && languages.match({language: 'haxe', scheme: 'file'}, window.activeTextEditor.document) > 0;
+        //var isRelatedPanel = hasEditor && (window.activeTextEditor.document:Dynamic).scheme != "file" && lastLanguage == "haxe";
+
+        //if (isDocument || isRelatedPanel) {
+        if (configuration != null) {
             statusBarItem.text = configurationListByID[getID()].label;
             statusBarItem.show();
+            lastLanguage = "haxe";
             return;
         }
 
+        lastLanguage = null;
         statusBarItem.hide();
     }
 

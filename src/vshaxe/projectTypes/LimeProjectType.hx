@@ -12,6 +12,7 @@ class LimeProjectType extends AbstractProjectType {
     var editTargetFlagsItem:StatusBarItem;
     var targetItems:Array<TargetItem>;
     var buildConfigItems:Array<BuildConfigItem>;
+    var lastLanguage:String;
 
     public function new(context:ExtensionContext) {
         super(context, "lime");
@@ -191,7 +192,11 @@ class LimeProjectType extends AbstractProjectType {
     }
 
     function updateStatusBarItems() {
-        if (enabled && window.activeTextEditor != null && languages.match({language: 'haxe', scheme: 'file'}, window.activeTextEditor.document) > 0) {
+        //var hasEditor = (window.activeTextEditor != null);
+        //var isDocument = hasEditor && languages.match({language: 'haxe', scheme: 'file'}, window.activeTextEditor.document) > 0;
+        //var isRelatedPanel = hasEditor && (window.activeTextEditor.document:Dynamic).scheme != "file" && lastLanguage == "haxe";
+
+        if (enabled /*&& (isDocument || isRelatedPanel)*/) {
             var target = getTarget();
             for (i in 0...targetItems.length) {
                 var item = targetItems[i];
@@ -214,9 +219,11 @@ class LimeProjectType extends AbstractProjectType {
 
             editTargetFlagsItem.text = "$(list-unordered)";
             editTargetFlagsItem.show();
+            lastLanguage = "haxe";
             return;
         }
 
+        lastLanguage = null;
         selectTargetItem.hide();
         selectBuildConfigItem.hide();
         editTargetFlagsItem.hide();
