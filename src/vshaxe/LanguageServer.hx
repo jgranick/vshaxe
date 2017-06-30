@@ -8,7 +8,7 @@ class LanguageServer {
     var context:ExtensionContext;
     var disposable:Disposable;
     var hxFileWatcher:FileSystemWatcher;
-    var displayConfig:DisplayConfiguration;
+    var projectConfig:ProjectConfiguration;
     var dependencyExplorer:DependencyExplorer;
 
     public var client(default,null):LanguageClient;
@@ -16,8 +16,8 @@ class LanguageServer {
     public function new(context:ExtensionContext) {
         this.context = context;
 
-        displayConfig = new DisplayConfiguration(context);
-        dependencyExplorer = new DependencyExplorer(context, displayConfig.getConfiguration());
+        projectConfig = new ProjectConfiguration(context);
+        dependencyExplorer = new DependencyExplorer(context, []/*projectConfig.getConfiguration()*/);
         context.subscriptions.push(window.onDidChangeActiveTextEditor(onDidChangeActiveTextEditor));
     }
 
@@ -40,7 +40,7 @@ class LanguageServer {
                 fileEvents: hxFileWatcher
             },
             initializationOptions: {
-                displayConfigurationIndex: displayConfig.getIndex()
+                projectConfigurationID: projectConfig.getID()
             }
         };
         client = new LanguageClient("haxe", "Haxe", serverOptions, clientOptions);
@@ -49,12 +49,12 @@ class LanguageServer {
         };
         client.onReady().then(function(_) {
             client.outputChannel.appendLine("Haxe language server started");
-            displayConfig.onDidChangeIndex = function(index) {
-                client.sendNotification({method: "vshaxe/didChangeDisplayConfigurationIndex"}, {index: index});
-            }
-            displayConfig.onDidChangeDisplayConfiguration = function(configuration) {
-                dependencyExplorer.onDidChangeDisplayConfiguration(configuration);
-            }
+            //displayConfig.onDidChangeIndex = function(index) {
+                //client.sendNotification({method: "vshaxe/didChangeDisplayConfigurationIndex"}, {index: index});
+            //}
+            //displayConfig.onDidChangeDisplayConfiguration = function(configuration) {
+                //dependencyExplorer.onDidChangeDisplayConfiguration(configuration);
+            //}
 
             context.subscriptions.push(hxFileWatcher.onDidCreate(function(uri) {
                 var editor = window.activeTextEditor;

@@ -81,13 +81,13 @@ class DependencyExplorer {
 
         for (info in dependencyInfos) {
             // don't add duplicates
-            if (newNodes.find(d -> d.path == info.path) != null) {
+            if (newNodes.find(function(d) return d.path == info.path) != null) {
                 continue;
             }
 
             // reuse existing nodes if possible to preserve their collapsibleState
             if (dependencies != null) {
-                var oldNode = dependencyNodes.find(d -> d.path == info.path);
+                var oldNode = dependencyNodes.find(function(d) return d.path == info.path);
                 if (oldNode != null) {
                     newNodes.push(oldNode);
                     continue;
@@ -162,7 +162,7 @@ class DependencyExplorer {
     }
 
     function sortChildren(children:Array<Node>) {
-        haxe.ds.ArraySort.sort(children, (c1, c2) -> {
+        haxe.ds.ArraySort.sort(children, function(c1, c2) return {
             function compare(a:String, b:String) {
                 a = a.toLowerCase();
                 b = b.toLowerCase();
@@ -193,7 +193,7 @@ class DependencyExplorer {
         if (node.isDirectory) {
             node.collapsibleState = if (node.collapsibleState == Collapsed) Expanded else Collapsed;
         } else {
-            workspace.openTextDocument(node.path).then(document -> window.showTextDocument(document, {preview: true}));
+            workspace.openTextDocument(node.path).then(function(document) return window.showTextDocument(document, {preview: true}));
         }
     }
 

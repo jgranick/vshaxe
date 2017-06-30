@@ -1,4 +1,4 @@
-package vshaxe;
+package vshaxe.projectTypes;
 
 import vscode.ExtensionContext;
 import vscode.QuickPickItem;
@@ -6,23 +6,31 @@ import vscode.StatusBarItem;
 import Vscode.*;
 using vshaxe.helper.ArrayHelper;
 
-class DisplayConfiguration {
-    var context:ExtensionContext;
+class HXMLProjectType extends AbstractProjectType {
     var statusBarItem:StatusBarItem;
     var configuration:Array<String>;
 
     public function new(context:ExtensionContext) {
-        this.context = context;
+        super(context, "hxml");
 
         statusBarItem = window.createStatusBarItem(Left);
-        statusBarItem.tooltip = "Select Haxe configuration";
-        statusBarItem.command = "haxe.selectDisplayConfiguration";
+        statusBarItem.tooltip = "Select HXML Configuration";
+        statusBarItem.command = "haxe.hxml.selectDisplayConfiguration";
         context.subscriptions.push(statusBarItem);
 
-        context.subscriptions.push(commands.registerCommand("haxe.selectDisplayConfiguration", selectConfiguration));
+        context.subscriptions.push(commands.registerCommand("haxe.hxml.selectDisplayConfiguration", selectConfiguration));
 
         context.subscriptions.push(workspace.onDidChangeConfiguration(onDidChangeConfiguration));
         context.subscriptions.push(window.onDidChangeActiveTextEditor(onDidChangeActiveTextEditor));
+    }
+
+    public override function disable() {
+        enabled = false;
+        updateStatusBarItem();
+    }
+
+    public override function enable() {
+        enabled = true;
 
         fixIndex();
         updateStatusBarItem();
@@ -37,6 +45,7 @@ class DisplayConfiguration {
     }
 
     function selectConfiguration() {
+        if (!enabled) return;
         var configs = getConfigurations();
         if (configs == null || configs.length == 0) {
             window.showErrorMessage("No Haxe display configurations are available. Please provide the haxe.displayConfigurations setting.", ({title: "Edit settings"} : vscode.MessageItem)).then(function(button) {
@@ -62,7 +71,7 @@ class DisplayConfiguration {
             });
         }
 
-        window.showQuickPick(items, {matchOnDescription: true, placeHolder: "Select Haxe display configuration"}).then(function(choice:DisplayConfigurationPickItem) {
+        window.showQuickPick(items, {matchOnDescription: true, placeHolder: "Select HXML Configuration"}).then(function(choice:DisplayConfigurationPickItem) {
             if (choice == null || choice.index == getIndex())
                 return;
             setIndex(choice.index);
@@ -80,7 +89,7 @@ class DisplayConfiguration {
     }
 
     function updateStatusBarItem() {
-        if (window.activeTextEditor == null) {
+        if (!enabled || window.activeTextEditor == null) {
             statusBarItem.hide();
             return;
         }
@@ -102,16 +111,16 @@ class DisplayConfiguration {
         return workspace.getConfiguration("haxe").get("displayConfigurations");
     }
 
-    public inline function getConfiguration():Array<String> {
+    public override function getConfiguration():Array<String> {
         return getConfigurations()[getIndex()];
     }
 
-    public inline function getIndex():Int {
-        return context.workspaceState.get("haxe.displayConfigurationIndex", 0);
+    public override function getIndex():Int {
+        return context.workspaceState.get("haxe.hxml.displayConfigurationIndex", 0);
     }
 
     function setIndex(index:Int) {
-        context.workspaceState.update("haxe.displayConfigurationIndex", index);
+        context.workspaceState.update("haxe.hxml.displayConfigurationIndex", index);
         updateStatusBarItem();
         onDidChangeIndex(index);
         checkConfigurationChange();
@@ -125,9 +134,9 @@ class DisplayConfiguration {
         }
     }
 
-    public dynamic function onDidChangeIndex(index:Int):Void {}
+    //public dynamic function onDidChangeIndex(index:Int):Void {}
 
-    public dynamic function onDidChangeDisplayConfiguration(configuration:Array<String>):Void {}
+    //public dynamic function onDidChangeDisplayConfiguration(configuration:Array<String>):Void {}
 }
 
 private typedef DisplayConfigurationPickItem = {

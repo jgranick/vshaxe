@@ -29,7 +29,7 @@ class DependencyResolver {
         }
         paths = paths.concat(dependencies.classPaths);
 
-        var infos = paths.map(getDependencyInfo).filter(info -> info != null);
+        var infos = paths.map(getDependencyInfo).filter(function(info) return info != null);
 
         // std lib needs to be handled separately
         var stdLibPath = getStandardLibraryPath(haxePath);
