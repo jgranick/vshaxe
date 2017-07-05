@@ -38,7 +38,7 @@ class ProjectConfiguration {
             configurationListByID[item.id] = item;
         }
 
-        statusBarItem = window.createStatusBarItem(Left);
+        statusBarItem = window.createStatusBarItem(Left, 20);
         statusBarItem.tooltip = "Select Project Configuration";
         statusBarItem.command = "haxe.selectProjectConfiguration";
         context.subscriptions.push(statusBarItem);

@@ -214,7 +214,7 @@ private class Node extends TreeItem {
     public function new(label:String, path:String) {
         super(label);
         this.path = path;
-        isDirectory = FileSystem.isDirectory(path);
+        isDirectory = try FileSystem.isDirectory(path) catch(e:Dynamic) false;
         if (isDirectory) {
             collapsibleState = Collapsed;
         }

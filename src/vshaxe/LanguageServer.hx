@@ -17,7 +17,7 @@ class LanguageServer {
         this.context = context;
 
         projectConfig = new ProjectConfiguration(context);
-        dependencyExplorer = new DependencyExplorer(context, []/*projectConfig.getConfiguration()*/);
+        dependencyExplorer = new DependencyExplorer(context, projectConfig.getDisplayArguments());
         context.subscriptions.push(window.onDidChangeActiveTextEditor(onDidChangeActiveTextEditor));
     }
 
@@ -52,6 +52,7 @@ class LanguageServer {
             client.outputChannel.appendLine("Haxe language server started");
             projectConfig.onDidChangeDisplayArguments = function(args) {
                 client.sendNotification({method: "vshaxe/didChangeDisplayArguments"}, {arguments: args});
+                dependencyExplorer.onDidChangeDisplayConfiguration(args);
             }
             //displayConfig.onDidChangeDisplayConfiguration = function(configuration) {
                 //dependencyExplorer.onDidChangeDisplayConfiguration(configuration);

@@ -20,17 +20,17 @@ class LimeProjectType extends AbstractProjectType {
     public function new(context:ExtensionContext) {
         super(context, "lime");
 
-        selectTargetItem = window.createStatusBarItem(Left);
+        selectTargetItem = window.createStatusBarItem(Left, 19);
         selectTargetItem.tooltip = "Select Target";
         selectTargetItem.command = "haxe.lime.selectTarget";
         context.subscriptions.push(selectTargetItem);
 
-        selectBuildConfigItem = window.createStatusBarItem(Left);
+        selectBuildConfigItem = window.createStatusBarItem(Left, 18);
         selectBuildConfigItem.tooltip = "Select Build Configuration";
         selectBuildConfigItem.command = "haxe.lime.selectBuildConfig";
         context.subscriptions.push(selectBuildConfigItem);
 
-        editTargetFlagsItem = window.createStatusBarItem(Left);
+        editTargetFlagsItem = window.createStatusBarItem(Left, 17);
         editTargetFlagsItem.tooltip = "Additional Command-Line Arguments";
         editTargetFlagsItem.command = "haxe.lime.editTargetFlags";
         context.subscriptions.push(editTargetFlagsItem);

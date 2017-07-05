@@ -56,7 +56,11 @@ class HxmlParser {
         var result = [];
         var flag = null;
         for (arg in args) {
-            if (arg.startsWith("-")) {
+            if (arg.startsWith("-lib ")) {
+                result.push(Param("-lib", arg.substr(5)));
+            } else if (arg.startsWith("-cp ")) {
+                result.push(Param("-cp", arg.substr(4)));
+            } else if (arg.startsWith("-")) {
                 if (flag != null) {
                     result.push(Simple(flag));
                     flag = null;
@@ -119,6 +123,7 @@ class HxmlParser {
         }
 
         processLines(parseArray(configuration));
+
         return result;
     }
 }
