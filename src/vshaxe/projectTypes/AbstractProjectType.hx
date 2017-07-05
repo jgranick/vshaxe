@@ -13,7 +13,7 @@ class AbstractProjectType {
         this.id = id;
     }
 
-    public function getConfiguration():Array<String> {
+    public function getDisplayArguments():Array<String> {
         return [];
     }
 
@@ -29,7 +29,5 @@ class AbstractProjectType {
         enabled = true;
     }
 
-    public dynamic function onDidChangeIndex(index:Int):Void {}
-
-    public dynamic function onDidChangeDisplayConfiguration(configuration:Array<String>):Void {}
+    public dynamic function onDidChangeDisplayArguments(args:Array<String>):Void {}
 }

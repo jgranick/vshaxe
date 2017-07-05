@@ -1,5 +1,7 @@
 package vshaxe.projectTypes;
 
+import js.node.Buffer;
+import js.node.ChildProcess;
 import vscode.ExtensionContext;
 import vscode.QuickPickItem;
 import vscode.StatusBarItem;
@@ -13,6 +15,7 @@ class LimeProjectType extends AbstractProjectType {
     var targetItems:Array<TargetItem>;
     var buildConfigItems:Array<BuildConfigItem>;
     var lastLanguage:String;
+    var displayArguments:Array<String> = [];
 
     public function new(context:ExtensionContext) {
         super(context, "lime");
@@ -191,6 +194,23 @@ class LimeProjectType extends AbstractProjectType {
         updateStatusBarItems();
     }
 
+    function updateDisplayArguments() {
+        var buildConfigFlags = getBuildConfigFlags();
+        var targetFlags = getTargetFlags();
+        var commandLine = StringTools.trim("lime display " + getTarget() + (buildConfigFlags != "" ? " " + buildConfigFlags : "") + (targetFlags != "" ? " " + targetFlags : ""));
+        trace ("Running display command: " + commandLine);
+        try {
+            var result:Buffer = ChildProcess.execSync(commandLine, { cwd: workspace.rootPath });
+            var args = result.toString().split("\n");
+            trace (args);
+            displayArguments = args;
+        } catch (e:Dynamic) {
+            trace ("Error running display command: " + commandLine);
+            trace (e);
+        }
+        onDidChangeDisplayArguments(displayArguments);
+    }
+
     function updateStatusBarItems() {
         //var hasEditor = (window.activeTextEditor != null);
         //var isDocument = hasEditor && languages.match({language: 'haxe', scheme: 'file'}, window.activeTextEditor.document) > 0;
@@ -233,8 +253,11 @@ class LimeProjectType extends AbstractProjectType {
         return workspace.getConfiguration("haxe").get("displayConfigurations");
     }
 
-    public override function getConfiguration():Array<String> {
-        return getConfigurations()[getIndex()];
+    public override function getDisplayArguments():Array<String> {
+        if (displayArguments.length == 0) {
+            updateDisplayArguments();
+        }
+        return displayArguments;
     }
 
     public function getTarget():String {
@@ -244,6 +267,7 @@ class LimeProjectType extends AbstractProjectType {
     function setTarget(target:String) {
         context.workspaceState.update("haxe.lime.target", target);
         updateStatusBarItems();
+        updateDisplayArguments();
         //onDidChangeIndex(index);
         //checkConfigurationChange();
     }
@@ -255,6 +279,7 @@ class LimeProjectType extends AbstractProjectType {
     function setBuildConfigFlags(flags:String) {
         context.workspaceState.update("haxe.lime.buildConfigFlags", flags);
         updateStatusBarItems();
+        updateDisplayArguments();
         //onDidChangeIndex(index);
         //checkConfigurationChange();
     }
@@ -265,6 +290,7 @@ class LimeProjectType extends AbstractProjectType {
 
     function setTargetFlags(flags:String) {
         context.workspaceState.update("haxe.lime.additionalTargetFlags", flags);
+        updateDisplayArguments();
         //updateStatusBarItems();
         //onDidChangeIndex(index);
         //checkConfigurationChange();

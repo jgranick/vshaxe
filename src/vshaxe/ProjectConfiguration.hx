@@ -49,8 +49,8 @@ class ProjectConfiguration {
         context.subscriptions.push(window.onDidChangeActiveTextEditor(onDidChangeActiveTextEditor));
 
         fixID();
-        updateStatusBarItem();
         configuration = getConfiguration();
+        updateStatusBarItem();
     }
 
     function fixID() {
@@ -96,6 +96,11 @@ class ProjectConfiguration {
         statusBarItem.hide();
     }
 
+    public inline function getDisplayArguments():Array<String> {
+        trace ("get display arguments");
+        return getConfiguration().getDisplayArguments();
+    }
+
     public inline function getConfiguration():AbstractProjectType {
         var id = getID();
         if (configuration != null && configuration.id != id) {
@@ -110,6 +115,8 @@ class ProjectConfiguration {
             configuration = configurations[id];
             configuration.enable();
         }
+
+        configuration.onDidChangeDisplayArguments = function (args) onDidChangeDisplayArguments(args);
 
         return configuration;
     }
@@ -133,9 +140,7 @@ class ProjectConfiguration {
         }
     }
 
-    public dynamic function onDidChangeIndex(index:Int):Void {}
-
-    public dynamic function onDidChangeDisplayConfiguration(configuration:Array<String>):Void {}
+    public dynamic function onDidChangeDisplayArguments(args:Array<String>):Void {}
 }
 
 private typedef ProjectConfigurationItem = {

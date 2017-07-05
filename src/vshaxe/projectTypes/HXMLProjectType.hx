@@ -34,7 +34,7 @@ class HXMLProjectType extends AbstractProjectType {
 
         fixIndex();
         updateStatusBarItem();
-        configuration = getConfiguration();
+        configuration = getDisplayArguments();
     }
 
     function fixIndex() {
@@ -111,7 +111,7 @@ class HXMLProjectType extends AbstractProjectType {
         return workspace.getConfiguration("haxe").get("displayConfigurations");
     }
 
-    public override function getConfiguration():Array<String> {
+    public override function getDisplayArguments():Array<String> {
         return getConfigurations()[getIndex()];
     }
 
@@ -122,14 +122,14 @@ class HXMLProjectType extends AbstractProjectType {
     function setIndex(index:Int) {
         context.workspaceState.update("haxe.hxml.displayConfigurationIndex", index);
         updateStatusBarItem();
-        onDidChangeIndex(index);
+        //onDidChangeIndex(index);
         checkConfigurationChange();
     }
 
     function checkConfigurationChange() {
-        var newConfiguration = getConfiguration();
+        var newConfiguration = getDisplayArguments();
         if (!newConfiguration.equals(configuration)) {
-            onDidChangeDisplayConfiguration(newConfiguration);
+            //onDidChangeDisplayConfiguration(newConfiguration);
             configuration = newConfiguration;
         }
     }
