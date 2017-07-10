@@ -134,5 +134,6 @@ class LanguageServer {
     public function updateDisplayArguments(args:Array<String>):Void {
         //trace ("update display arguments: " + args);
         client.sendNotification({method: "vshaxe/didChangeDisplayArguments"}, {arguments: args});
+        dependencyExplorer.onDidChangeDisplayArguments(args);
     }
 }

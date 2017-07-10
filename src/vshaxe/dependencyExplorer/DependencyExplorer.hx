@@ -158,7 +158,7 @@ class DependencyExplorer {
         var currentTime = Date.now().getTime();
         var doubleClickTime = 500;
         var preview = previousSelection == null || previousSelection.node != node || (currentTime - previousSelection.time) >= doubleClickTime;
-        workspace.openTextDocument(node.path).then(document -> window.showTextDocument(document, {preview: preview}));
+        workspace.openTextDocument(node.path).then(function(document) window.showTextDocument(document, {preview: preview}));
         previousSelection = {node: node, time: currentTime};
     }
 
