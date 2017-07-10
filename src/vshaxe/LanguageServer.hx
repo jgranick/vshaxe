@@ -131,8 +131,16 @@ class LanguageServer {
         start();
     }
 
-    public function updateDisplayArguments(args:Array<String>):Void {
-        //trace ("update display arguments: " + args);
+    public function updateDisplayArguments(arguments:String):Void {
+        // TODO: Better parsing
+        var args = [];
+        var lines = arguments.split("\n");
+        for (line in lines) {
+            line = StringTools.trim(line);
+            if (line != "") {
+                args = args.concat(line.split (" "));
+            }
+        }
         client.sendNotification({method: "vshaxe/didChangeDisplayArguments"}, {arguments: args});
         dependencyExplorer.onDidChangeDisplayArguments(args);
     }
