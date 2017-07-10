@@ -1,7 +1,6 @@
 package vshaxe.dependencyExplorer;
 
 import haxe.io.Path;
-import sys.FileSystem;
 import Vscode.*;
 import vscode.*;
 import js.Promise;
@@ -12,20 +11,21 @@ using vshaxe.helper.ArrayHelper;
 
 class DependencyExplorer {
     var context:ExtensionContext;
-    var configuration:Array<String>;
+    var displayArguments:Array<String>;
     var relevantHxmls:Array<String> = [];
     var dependencyNodes:Array<Node> = [];
     var dependencies:DependencyList;
     var refreshNeeded:Bool = true;
     var haxePath:String;
+    var previousSelection:{node:Node, time:Float};
 
     var _onDidChangeTreeData = new EventEmitter<Node>();
 
     public var onDidChangeTreeData:Event<Node>;
 
-    public function new(context:ExtensionContext, configuration:Array<String>) {
+    public function new(context:ExtensionContext, displayArguments:Array<String>) {
         this.context = context;
-        this.configuration = configuration;
+        this.displayArguments = displayArguments;
 
         onDidChangeTreeData = _onDidChangeTreeData.event;
         window.registerTreeDataProvider("haxe.dependencies", this);
@@ -64,7 +64,7 @@ class DependencyExplorer {
     }
 
     function refreshDependencies():Array<Node> {
-        var newDependencies = HxmlParser.extractDependencies(configuration, workspace.rootPath);
+        var newDependencies = HxmlParser.extractDependencies(displayArguments, workspace.rootPath);
         relevantHxmls = newDependencies.hxmls;
 
         // avoid FS access / creating processes unless there were _actually_ changes
@@ -114,14 +114,17 @@ class DependencyExplorer {
         return new Node(label, info.path);
     }
 
-    public function onDidChangeDisplayConfiguration(configuration:Array<String>) {
-        this.configuration = configuration;
+    public function onDidChangeDisplayArguments(displayArguments:Array<String>) {
+        this.displayArguments = displayArguments;
         refresh();
     }
 
     function refresh(hard:Bool = true) {
         if (hard) {
             dependencies = null;
+            for (node in dependencyNodes) {
+                node.refresh();
+            }
         }
         refreshNeeded = true;
         _onDidChangeTreeData.fire();
@@ -138,91 +141,31 @@ class DependencyExplorer {
                 refreshNeeded = false;
             }
 
-            if (node == null) {
-                resolve(dependencyNodes);
-            } else {
-                resolve(getNodeChildren(node));
-            }
+            resolve(if (node == null) dependencyNodes else node.children);
         });
-    }
-
-    function getNodeChildren(node:Node):Array<Node> {
-        if (!node.isDirectory) {
-            return [];
-        }
-
-        var children = [];
-        for (file in FileSystem.readDirectory(node.path)) {
-            if (!isExcluded(file)) {
-                children.push(new Node(file, '${node.path}/$file'));
-            }
-        }
-        sortChildren(children);
-        return children;
-    }
-
-    function sortChildren(children:Array<Node>) {
-        haxe.ds.ArraySort.sort(children, function(c1, c2) return {
-            function compare(a:String, b:String) {
-                a = a.toLowerCase();
-                b = b.toLowerCase();
-                if (a < b) return -1;
-                if (a > b) return 1;
-                return 0;
-            }
-
-            if (c1.isDirectory && c2.isDirectory) {
-                return compare(c1.label, c2.label);
-            } else if (c1.isDirectory) {
-                return -1;
-            } else if (c2.isDirectory) {
-                return 1;
-            } else {
-                return compare(c1.label, c2.label);
-            }
-        });
-    }
-
-    function isExcluded(file:String):Bool {
-        // the proper way of doing this would be to check against the patterns in "files.exclude",
-        // but then we'd need to include a lib for glob patterns...
-        return file == ".git" || file == ".svn" || file == ".hg" || file == "CVS" || file == ".DS_Store";
     }
 
     function selectNode(node:Node) {
         if (node.isDirectory) {
-            node.collapsibleState = if (node.collapsibleState == Collapsed) Expanded else Collapsed;
+            node.toggleState();
+            _onDidChangeTreeData.fire();
         } else {
-            workspace.openTextDocument(node.path).then(function(document) return window.showTextDocument(document, {preview: true}));
+            openTextDocument(node);
         }
+    }
+
+    function openTextDocument(node:Node) {
+        var currentTime = Date.now().getTime();
+        var doubleClickTime = 500;
+        var preview = previousSelection == null || previousSelection.node != node || (currentTime - previousSelection.time) >= doubleClickTime;
+        workspace.openTextDocument(node.path).then(document -> window.showTextDocument(document, {preview: preview}));
+        previousSelection = {node: node, time: currentTime};
     }
 
     function collapseAll(node:Node) {
         for (node in dependencyNodes) {
-            if (node.collapsibleState != None) {
-                node.collapsibleState = Collapsed;
-            }
+            node.collapse();
         }
         _onDidChangeTreeData.fire();
-    }
-}
-
-private class Node extends TreeItem {
-    public var path(default,null):String;
-    public var isDirectory(default,null):Bool;
-
-    public function new(label:String, path:String) {
-        super(label);
-        this.path = path;
-        isDirectory = FileSystem.isDirectory(path);
-        if (isDirectory) {
-            collapsibleState = Collapsed;
-        }
-
-        command = {
-            command: "haxe.dependencies.selectNode",
-            arguments: [this],
-            title: "Open File"
-        };
     }
 }

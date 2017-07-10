@@ -3,8 +3,17 @@
 **Bugfixes**:
 
 - fixed the dependency explorer for `haxelib dev` libs in the haxelib repo ([#141](https://github.com/vshaxe/vshaxe/issues/141))
+- fixed the dependency explorer with a relative `haxe.displayServer.haxePath` ([#58](https://github.com/vshaxe/vshaxe/issues/58))
 - fixed a minor anon function highlighting issue ([haxe-tmLanguage#31](https://github.com/vshaxe/haxe-tmLanguage/issues/31))
 - fixed renaming `expr` in `case macro $expr:` ([#142](https://github.com/vshaxe/vshaxe/issues/142))
+- fixed a regression with duplicated Haxe output channels ([#87](https://github.com/vshaxe/vshaxe/issues/87))
+- fixed line break handling in completion docs ([#150](https://github.com/vshaxe/vshaxe/issues/150))
+
+**Changes and improvements**:
+
+- added support for `@event` JavaDoc tags in highlighting and completion
+- reduced Haxe server restarts to changes of relevant settings ([#153](https://github.com/vshaxe/vshaxe/issues/153))
+- changed dependency explorer selection to open files permanently on double-click
 
 ### 1.8.0 (June 28, 2017)
 
