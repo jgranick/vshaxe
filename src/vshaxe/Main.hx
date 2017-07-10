@@ -1,5 +1,6 @@
 package vshaxe;
 
+import js.Promise;
 import Vscode.*;
 import vscode.*;
 
@@ -31,32 +32,41 @@ class Main {
     }
 
     static function init(context:ExtensionContext, api:Api) {
-        instance = new Main(context, api.onReadyCallback);
+        instance = new Main(context, api.onReady);
     }
 }
 
+@:allow(vshaxe)
 @:keep class Api {
-    public var isReady(get, null):Bool;
+    private var isReady:Bool;
+    private var resolvePromise:Array<Api->Void>;
 
-    public function new() {}
+    private function new() {}
 
-    public dynamic function onReady():Void {} // TODO: Support multiple listeners?
-
-    public function onReadyCallback():Void {
-        onReady();
-    }
-
-    public function updateDisplayArguments(args:Array<String>):Void {
-        if (Main.instance != null && isReady) {
-            Main.instance.server.updateDisplayArguments(args);
+    public function onReady():Promise<Api> {
+        if (!isReady) {
+            isReady = (Main.instance != null && Main.instance.server.isReady);
+        }
+        if (isReady) {
+            if (resolvePromise != null) {
+                for (resolve in resolvePromise) {
+                    resolve(this);
+                }
+                resolvePromise = null;
+            }
+            return Promise.resolve(this);
+        } else {
+            resolvePromise = [];
+            var promise = new Promise(function (resolve, reject) {
+                resolvePromise.push (resolve);
+            });
+            return promise;
         }
     }
 
-    function get_isReady():Bool {
-        if (Main.instance != null) {
-            return Main.instance.server.isReady;
-        } else {
-            return false;
+    public function updateDisplayArguments(args:Array<String>):Void {
+        if (isReady) {
+            Main.instance.server.updateDisplayArguments(args);
         }
     }
 }
