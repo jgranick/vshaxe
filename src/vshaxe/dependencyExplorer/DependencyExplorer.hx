@@ -38,7 +38,7 @@ class DependencyExplorer {
         context.subscriptions.push(hxmlFileWatcher.onDidDelete(onDidChangeHxml));
         context.subscriptions.push(hxmlFileWatcher);
 
-        context.subscriptions.push(haxeExecutable.onDidChangeConfig(function(_) return refresh()));
+        context.subscriptions.push(haxeExecutable.onDidChangeConfiguration(function(_) return refresh()));
     }
 
     function onDidChangeHxml(uri:Uri) {
