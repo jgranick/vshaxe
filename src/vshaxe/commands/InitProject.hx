@@ -19,7 +19,7 @@ class InitProject {
             return;
         }
 
-        var nonEmpty = FileSystem.readDirectory(workspaceRoot).exists(f -> !f.startsWith("."));
+        var nonEmpty = FileSystem.readDirectory(workspaceRoot).exists(function(f) return !f.startsWith("."));
         if (nonEmpty) {
             window.showErrorMessage("To set up sample Haxe project, workspace must be either empty");
             return;

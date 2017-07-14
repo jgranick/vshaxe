@@ -19,8 +19,8 @@ class HxmlDiscovery {
         context.subscriptions.push(_onDidChangeHxmlFiles);
 
         var pattern = "*.hxml";
-        workspace.findFiles(pattern).then(files -> {
-            var foundFiles = if (files != null) files.map(uri -> pathRelativeToRoot(uri)) else [];
+        workspace.findFiles(pattern).then(function(files) return {
+            var foundFiles = if (files != null) files.map(function(uri) return pathRelativeToRoot(uri)) else [];
             if (!hxmlFiles.equals(foundFiles)) {
                 hxmlFiles = foundFiles;
                 onHxmlFilesChanged();
@@ -30,11 +30,11 @@ class HxmlDiscovery {
         // looks like file watchers require a glob prefixed with the workspace root
         var prefixedPattern = Path.join([workspace.rootPath, pattern]);
         var fileWatcher = workspace.createFileSystemWatcher(prefixedPattern, false, true, false);
-        fileWatcher.onDidCreate(uri -> {
+        fileWatcher.onDidCreate(function(uri) {
             hxmlFiles.push(pathRelativeToRoot(uri));
             onHxmlFilesChanged();
         });
-        fileWatcher.onDidDelete(uri -> {
+        fileWatcher.onDidDelete(function(uri) {
             hxmlFiles.remove(pathRelativeToRoot(uri));
             onHxmlFilesChanged();
         });

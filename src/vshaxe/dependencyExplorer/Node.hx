@@ -34,10 +34,10 @@ class Node extends TreeItem {
         }
 
         var newChildren = [];
-        forEachChild((file, path) -> {
+        forEachChild(function(file, path) {
             var existingNode = null;
             if (children != null) {
-                existingNode = children.find(node -> node.label == file);
+                existingNode = children.find(function(node) return node.label == file);
             }
 
             if (existingNode != null) {
@@ -68,7 +68,7 @@ class Node extends TreeItem {
         }
 
         var children = [];
-        forEachChild((file, path) -> children.push(new Node(file, path)));
+        forEachChild(function(file, path) children.push(new Node(file, path)));
         sortChildren(children);
         return children;
     }
@@ -82,7 +82,7 @@ class Node extends TreeItem {
     }
 
     function sortChildren(children:Array<Node>) {
-        haxe.ds.ArraySort.sort(children, (c1, c2) -> {
+        haxe.ds.ArraySort.sort(children, function(c1, c2) {
             function compare(a:String, b:String) {
                 a = a.toLowerCase();
                 b = b.toLowerCase();

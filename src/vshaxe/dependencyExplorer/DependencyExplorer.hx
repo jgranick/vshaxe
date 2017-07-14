@@ -38,7 +38,7 @@ class DependencyExplorer {
         context.subscriptions.push(hxmlFileWatcher.onDidDelete(onDidChangeHxml));
         context.subscriptions.push(hxmlFileWatcher);
 
-        context.subscriptions.push(haxeExecutable.onDidChangeConfig(_ -> refresh()));
+        context.subscriptions.push(haxeExecutable.onDidChangeConfig(function(_) return refresh()));
     }
 
     function onDidChangeHxml(uri:Uri) {
@@ -67,13 +67,13 @@ class DependencyExplorer {
 
         for (info in dependencyInfos) {
             // don't add duplicates
-            if (newNodes.find(d -> d.path == info.path) != null) {
+            if (newNodes.find(function(d) return d.path == info.path) != null) {
                 continue;
             }
 
             // reuse existing nodes if possible to preserve their collapsibleState
             if (dependencies != null) {
-                var oldNode = dependencyNodes.find(d -> d.path == info.path);
+                var oldNode = dependencyNodes.find(function(d) return d.path == info.path);
                 if (oldNode != null) {
                     newNodes.push(oldNode);
                     continue;
@@ -144,7 +144,7 @@ class DependencyExplorer {
         var currentTime = Date.now().getTime();
         var doubleClickTime = 500;
         var preview = previousSelection == null || previousSelection.node != node || (currentTime - previousSelection.time) >= doubleClickTime;
-        workspace.openTextDocument(node.path).then(document -> window.showTextDocument(document, {preview: preview}));
+        workspace.openTextDocument(node.path).then(function(document) return window.showTextDocument(document, {preview: preview}));
         previousSelection = {node: node, time: currentTime};
     }
 

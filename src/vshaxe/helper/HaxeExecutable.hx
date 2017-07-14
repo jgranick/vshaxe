@@ -35,7 +35,7 @@ class HaxeExecutable {
     public function new(context:ExtensionContext) {
         updateConfig(getExecutableSettings());
         _onDidChangeConfig = new EventEmitter();
-        context.subscriptions.push(workspace.onDidChangeConfiguration(_ -> refresh()));
+        context.subscriptions.push(workspace.onDidChangeConfiguration(function(_) return refresh()));
     }
 
     /** Returns true if haxe.executable setting was configured by user **/

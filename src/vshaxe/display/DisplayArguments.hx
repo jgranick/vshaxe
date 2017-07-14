@@ -60,8 +60,8 @@ class DisplayArguments {
             return;
         }
 
-        items.moveToStart(item -> item.label == currentProvider);
-        window.showQuickPick(items, {placeHolder: "Select Haxe Completion Provider"}).then(item -> if (item != null) setCurrentProvider(item.label));
+        items.moveToStart(function(item) return item.label == currentProvider);
+        window.showQuickPick(items, {placeHolder: "Select Haxe Completion Provider"}).then(function(item) return if (item != null) setCurrentProvider(item.label));
     }
 
     inline function getCurrentProviderName():Null<String> {

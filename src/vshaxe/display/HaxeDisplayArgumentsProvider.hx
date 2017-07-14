@@ -22,8 +22,8 @@ class HaxeDisplayArgumentsProvider {
 
         context.registerHaxeCommand(SelectDisplayConfiguration, selectConfiguration);
 
-        context.subscriptions.push(workspace.onDidChangeConfiguration(_ -> refresh()));
-        hxmlDiscovery.onDidChangeHxmlFiles(_ -> refresh());
+        context.subscriptions.push(workspace.onDidChangeConfiguration(function(_) return refresh()));
+        hxmlDiscovery.onDidChangeHxmlFiles(function(_) return refresh());
 
         fixIndex();
         updateStatusBarItem();
@@ -54,9 +54,9 @@ class HaxeDisplayArgumentsProvider {
             window.showErrorMessage("No Haxe display configurations are available. Please provide the haxe.displayConfigurations setting.", ({title: "Edit settings"} : vscode.MessageItem)).then(function(button) {
                 if (button == null)
                     return;
-                workspace.getConfiguration("haxe").update("displayConfigurations", [], false).then(_ ->
+                workspace.getConfiguration("haxe").update("displayConfigurations", [], false).then(function(_) return
                     workspace.openTextDocument(workspace.rootPath + "/.vscode/settings.json").then(
-                        document -> window.showTextDocument(document)
+                        function(document) return window.showTextDocument(document)
                 ));
             });
             return;
@@ -73,7 +73,7 @@ class HaxeDisplayArgumentsProvider {
             });
         }
 
-        items.moveToStart(item -> item.index == getIndex());
+        items.moveToStart(function(item) return item.index == getIndex());
         window.showQuickPick(items, {matchOnDescription: true, placeHolder: "Select Haxe Display Configuration"}).then(function(choice:DisplayConfigurationPickItem) {
             if (choice == null || choice.index == getIndex())
                 return;
@@ -117,7 +117,7 @@ class HaxeDisplayArgumentsProvider {
         if (configs == null) configs = [] else configs = configs.copy();
         for (hxmlFile in hxmlDiscovery.hxmlFiles) {
             var hxmlConfig = [hxmlFile];
-            if (!configs.exists(config -> config.equals(hxmlConfig))) {
+            if (!configs.exists(function(config) return config.equals(hxmlConfig))) {
                 configs.push(hxmlConfig);
             }
         }

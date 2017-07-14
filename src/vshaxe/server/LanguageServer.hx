@@ -21,8 +21,8 @@ class LanguageServer {
         this.haxeExecutable = haxeExecutable;
 
         prepareDisplayServerConfig();
-        context.subscriptions.push(workspace.onDidChangeConfiguration(_ -> refreshDisplayServerConfig()));
-        context.subscriptions.push(haxeExecutable.onDidChangeConfig(_ -> refreshDisplayServerConfig()));
+        context.subscriptions.push(workspace.onDidChangeConfiguration(function(_) return refreshDisplayServerConfig()));
+        context.subscriptions.push(haxeExecutable.onDidChangeConfig(function(_) return refreshDisplayServerConfig()));
 
         context.subscriptions.push(window.onDidChangeActiveTextEditor(onDidChangeActiveTextEditor));
     }
@@ -64,14 +64,14 @@ class LanguageServer {
         // and send updated arguments once language server is ready. this can often happen on startup
         // due to asynchronous argument provider loading. I wonder if there's any way to handle this better...
         var argumentsChanged = false;
-        var argumentChangeListenerDisposable = displayArguments.onDidChangeArguments(_ -> argumentsChanged = true);
+        var argumentChangeListenerDisposable = displayArguments.onDidChangeArguments(function(_) return argumentsChanged = true);
 
         client.onReady().then(function(_) {
             client.outputChannel.appendLine("Haxe language server started");
             argumentChangeListenerDisposable.dispose();
             if (argumentsChanged)
                 client.sendNotification({method: "vshaxe/didChangeDisplayArguments"}, {arguments: displayArguments.arguments});
-            argumentChangeListenerDisposable = displayArguments.onDidChangeArguments(arguments -> client.sendNotification({method: "vshaxe/didChangeDisplayArguments"}, {arguments: arguments}));
+            argumentChangeListenerDisposable = displayArguments.onDidChangeArguments(function(arguments) return client.sendNotification({method: "vshaxe/didChangeDisplayArguments"}, {arguments: arguments}));
 
             context.subscriptions.push(hxFileWatcher.onDidCreate(function(uri) {
                 var editor = window.activeTextEditor;
